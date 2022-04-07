@@ -1,7 +1,7 @@
 
 CREATE DOMAIN public.xid AS CHAR(20) CHECK (VALUE ~ '^[a-v0-9]{20}$');
 
-CREATE SEQUENCE public.xid_serial MINVALUE 1 MAXVALUE 16777215 CYCLE ; --  ((255<<16) + (255<<8) + 255))
+CREATE SEQUENCE public.xid_serial MINVALUE 0 MAXVALUE 16777215 CYCLE ; --  ((255<<16) + (255<<8) + 255))
 
 SELECT setval('xid_serial', (random() * 16777215)::INT);  --  ((255<<16) + (255<<8) + 255))
 

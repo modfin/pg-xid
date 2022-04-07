@@ -158,5 +158,9 @@ FROM (
 -- +--------------------+---------------------------------+-----------+-------+-----------+
 ```
 
+
+## Test
+To run the tests you'll need to install docker along with go. Run `go test -v ./xid_test.go`
+
 ## Licenses
 The source code is licensed under the [MIT License](https://github.com/modfin/pg-xid/master/LICENSE).

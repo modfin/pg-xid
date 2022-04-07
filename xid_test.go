@@ -118,6 +118,10 @@ func installXid(db *sqlx.DB) {
 		panic(err)
 	}
 
+	_, err = db.Exec("SELECT setval('xid_serial', 16777215/2);")
+	if err != nil {
+		panic(err)
+	}
 }
 
 func TestXid(t *testing.T) {
@@ -134,6 +138,50 @@ func TestXid(t *testing.T) {
 	t.Run("Encoding", encoding(db))
 	t.Run("Decoding", decoding(db))
 	t.Run("Inspection", inspection(db))
+	t.Run("CyclingCounter", testCycle(db))
+}
+
+func testCycle(db *sqlx.DB) func(t *testing.T) {
+	return func(t *testing.T) {
+
+		off := 100
+		max := 16777215 + 1
+		start := max - off
+
+		_, err := db.Exec("SELECT setval('xid_serial', $1);", start-1)
+		if err != nil {
+			t.Log("unexpected err, got", err)
+			t.Fail()
+		}
+
+		var xs []string
+		err = db.Select(&xs, "SELECT xid() FROM generate_series(1,$1)", off*2)
+		if err != nil {
+			t.Log("unexpected err, got", err)
+			t.Fail()
+		}
+
+		if len(xs) != off*2 {
+			t.Log("expected len ==", off*2, "got", len(xs))
+			t.Fail()
+		}
+
+		for i, str := range xs {
+			x, err := xid.FromString(str)
+			if err != nil {
+				t.Log("unexpected err, got", err)
+				t.Fail()
+			}
+			counter := x.Counter()
+
+			if counter != int32((start+i)%max) {
+				t.Logf("expected counter %v, got %v", int32((start+i)%max), counter)
+				t.Fail()
+			}
+
+		}
+
+	}
 }
 
 func inspection(db *sqlx.DB) func(t *testing.T) {
