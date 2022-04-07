@@ -1,4 +1,4 @@
-# Globally Unique ID Generator
+# XID for Postgres, Globally Unique ID Generator
 
 [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/modfin/pg-xid/master/LICENSE)
 
@@ -9,7 +9,7 @@
 
 ## Description
 
-`Xid` is a globally unique id generator library. They are small, fast to generate and ordered.
+`Xid` is a globally unique id generator functions. They are small and ordered.
 
 Xid uses the *Mongo Object ID* algorithm to generate globally unique ids with a different serialization (base32) to make it shorter when transported as a string:
 https://docs.mongodb.org/manual/reference/object-id/

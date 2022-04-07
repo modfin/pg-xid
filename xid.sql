@@ -1,5 +1,5 @@
 
-CREATE DOMAIN public.xid AS TEXT CHECK (VALUE ~ '^[a-z0-9]{20}$');
+CREATE DOMAIN public.xid AS CHAR(20) CHECK (VALUE ~ '^[a-v0-9]{20}$');
 
 CREATE SEQUENCE public.xid_serial MINVALUE 1 MAXVALUE 16777215 CYCLE ; --  ((255<<16) + (255<<8) + 255))
 
@@ -11,7 +11,7 @@ CREATE OR REPLACE FUNCTION public.xid_encode(_id int[])
 AS
 $$
 DECLARE
-    _encoding TEXT[] = '{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v}';
+    _encoding CHAR(1)[] = '{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v}';
 BEGIN
     RETURN _encoding[1+(_id[1] >> 3)]
        || _encoding[1+((_id[2]>>6)&31|(_id[1]<<2)&31)]
@@ -43,21 +43,22 @@ AS
 $$
 DECLARE
     _dec int[] = '{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}';
-
+    _b bytea;
 BEGIN
+    _b := _xid::BYTEA;
     return ARRAY[
-            ((_dec[ascii(substring(_xid,1))]<<3) | (_dec[ascii(substring(_xid, 2))]>>2)) & 255,
-            ((_dec[ascii(substring(_xid,2))]<<6) | (_dec[ascii(substring(_xid,3))]<<1) | (_dec[ascii(substring(_xid,4))]>>4)) & 255,
-            ((_dec[ascii(substring(_xid,4))]<<4) | (_dec[ascii(substring(_xid,5))]>>1)) & 255,
-            ((_dec[ascii(substring(_xid,5))]<<7) | (_dec[ascii(substring(_xid,6))]<<2) | (_dec[ascii(substring(_xid,7))]>>3)) & 255,
-            ((_dec[ascii(substring(_xid,7))]<<5) | (_dec[ascii(substring(_xid,8))])) & 255,
-            ((_dec[ascii(substring(_xid,9))]<<3) | (_dec[ascii(substring(_xid,10))]>>2)) & 255,
-            ((_dec[ascii(substring(_xid,10))]<<6) | (_dec[ascii(substring(_xid,11))]<<1) | (_dec[ascii(substring(_xid,12))]>>4)) & 255,
-            ((_dec[ascii(substring(_xid,12))]<<4) | (_dec[ascii(substring(_xid,13))]>>1)) & 255,
-            ((_dec[ascii(substring(_xid,13))]<<7) | (_dec[ascii(substring(_xid,14))]<<2) | (_dec[ascii(substring(_xid,15))]>>3)) & 255,
-            ((_dec[ascii(substring(_xid,15))]<<5) | (_dec[ascii(substring(_xid,16))])) & 255,
-            ((_dec[ascii(substring(_xid,17))]<<3) | (_dec[ascii(substring(_xid,18))]>>2)) & 255,
-            ((_dec[ascii(substring(_xid,18))]<<6) | (_dec[ascii(substring(_xid,19))]<<1) | (_dec[ascii(substring(_xid,20))]>>4)) & 255
+            ((_dec[get_byte(_b,0)]<<3) | (_dec[get_byte(_b,1)]>>2)) & 255,
+            ((_dec[get_byte(_b,1)]<<6) | (_dec[get_byte(_b,2)]<<1) | (_dec[get_byte(_b,3)]>>4)) & 255,
+            ((_dec[get_byte(_b,3)]<<4) | (_dec[get_byte(_b,4)]>>1)) & 255,
+            ((_dec[get_byte(_b,4)]<<7) | (_dec[get_byte(_b,5)]<<2) | (_dec[get_byte(_b,6)]>>3)) & 255,
+            ((_dec[get_byte(_b,6)]<<5) | (_dec[get_byte(_b,7)])) & 255,
+            ((_dec[get_byte(_b,8)]<<3) | (_dec[get_byte(_b,9)]>>2)) & 255,
+            ((_dec[get_byte(_b,9)]<<6) | (_dec[get_byte(_b,10)]<<1) | (_dec[get_byte(_b,11)]>>4)) & 255,
+            ((_dec[get_byte(_b,11)]<<4) | (_dec[get_byte(_b,12)]>>1)) & 255,
+            ((_dec[get_byte(_b,12)]<<7) | (_dec[get_byte(_b,13)]<<2) | (_dec[get_byte(_b,14)]>>3)) & 255,
+            ((_dec[get_byte(_b,14)]<<5) | (_dec[get_byte(_b,15)])) & 255,
+            ((_dec[get_byte(_b,16)]<<3) | (_dec[get_byte(_b,17)]>>2)) & 255,
+            ((_dec[get_byte(_b,17)]<<6) | (_dec[get_byte(_b,18)]<<1) | (_dec[get_byte(_b,19)]>>4)) & 255
         ];
 END;
 $$;
@@ -68,7 +69,7 @@ CREATE OR REPLACE FUNCTION xid(_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP)
 AS
 $$
 DECLARE
-    _bytes        BYTEA;
+    _bytes  BYTEA;
     _id     int[];
 BEGIN
 
