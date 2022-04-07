@@ -10,7 +10,6 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
-	_ "github.com/lib/pq"
 	"github.com/modfin/henry/slicez"
 	"github.com/rs/xid"
 	"io/ioutil"
