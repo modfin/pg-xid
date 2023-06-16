@@ -1,4 +1,9 @@
-CREATE DOMAIN public.xid AS CHAR(20) CHECK (VALUE ~ '^[a-v0-9]{20}$');
+--ref: https://stackoverflow.com/a/48382296
+DO $$ BEGIN
+    CREATE DOMAIN public.xid AS CHAR(20) CHECK (VALUE ~ '^[a-v0-9]{20}$');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 CREATE SEQUENCE IF NOT EXISTS public.xid_serial MINVALUE 0 MAXVALUE 16777215 CYCLE; --  ((255<<16) + (255<<8) + 255))
 
