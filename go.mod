@@ -3,7 +3,7 @@ module xid
 go 1.18
 
 require (
-	github.com/docker/docker v26.1.4+incompatible
+	github.com/docker/docker v26.1.5+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/lib/pq v1.10.4
